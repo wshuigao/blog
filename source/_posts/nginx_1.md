@@ -17,7 +17,6 @@ tags:
 
    执行命令：<b> vim nginx.conf</b> 进入修改Nginx的配置; 按i 进行编辑 ;拉到最下面 修改配置 (这是我修改好的):
 ~~~html
-``` bash
       server {
        listen 443; //https访问的端口
        server_name www.iswho.site; //我的域名
@@ -35,7 +34,6 @@ tags:
            index index.html index.htm;
        }
       }
-```
 ~~~
 修改完 按 <kbd>ESC</kbd> 退出编辑；<b> :wq</b>进行保存退出；
 执行检查配置文件Nginx.conf是否正确 命令：

@@ -9,3 +9,5 @@ comments: "true"
 如果你想做这样一个博客 可以跟我一样使用 [Hexo](https://hexo.io/),
 在制作过程中有问题可以询问我 或者你可以访问 [这个教程](https://www.simon96.online/2018/10/12/hexo-tutorial/).
 
+
+<a><img src="http://q1pyga56k.bkt.clouddn.com/Jhonnyher-%E2%80%93Post-176.jpg" class="animated zoomIn"> </a>

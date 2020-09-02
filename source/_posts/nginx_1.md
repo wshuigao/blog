@@ -12,7 +12,8 @@ tags:
 同事说很简单的 然后我就百度着手开始弄，但是我的并没他说的那么简单，简直就是一步一个错误！
 
    首先 把ssl证书下载下来 我这里选择的Nginx的证书
-此处应有图片：。。
+   <a><img src="http://qiniu.iswho.site/nginx%E9%85%8D%E7%BD%AE1.png" class="animated zoomIn"> </a>
+
    然后在服务器nginx文件夹下面 创建一个cert文件夹 把下载下来的文件上传到这个文件下面 可以用命令上传，也可以用XFtp上传
 
    执行命令：<b> vim nginx.conf</b> 进入修改Nginx的配置; 按i 进行编辑 ;拉到最下面 修改配置 (这是我修改好的):

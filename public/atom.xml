@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Blog</title>
+  
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://www.iswho.site/"/>
+  <updated>2020-09-23T06:44:24.540Z</updated>
+  <id>http://www.iswho.site/</id>
+  
+  <author>
+    <name>Wh</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>从输入url到页面完成加载发生了什么?</title>
+    <link href="http://www.iswho.site/9/"/>
+    <id>http://www.iswho.site/9/</id>
+    <published>2020-09-22T16:00:00.000Z</published>
+    <updated>2020-09-23T06:44:24.540Z</updated>
+    
+    <content type="html"><![CDATA[<p>先来个流程总述：</p><ul><li><p>DNS解析：将域名解析成IP地址</p></li><li><p>TCP连接：TCP三次握手</p></li><li><p>发送HTTP请求</p></li><li><p>服务器处理请求并返回HTTP报文</p></li><li><p>浏览器解析渲染页面</p></li><li><p>连接结束：TCP四次挥手</p><h4 id="1、DNS解析"><a href="#1、DNS解析" class="headerlink" title="1、DNS解析"></a>1、DNS解析</h4><p>在浏览器输入URL后，首先要经过域名解析。浏览器通过向 DNS 服务器发送域名，DNS 服务器查询到与域名相对应的 IP 地址，然后返回给浏览器，浏览器再将 IP 地址打在协议上，同时请求参数也会在协议搭载，然后一并发送给对应的服务器。</p></li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">1.什么是URL</span><br><span class="line">URL（Uniform Resource Locator），统一资源定位符，用于定位互联网上资源，俗称网址。比如 http://www.w3school.com.cn/ht...，</span><br><span class="line">遵守以下的语法规则：</span><br><span class="line">`scheme://host.domain:port/path/filename`</span><br><span class="line">各部分解释如下：</span><br><span class="line">scheme：定义因特网服务的类型。常见的协议有 http、https、ftp、file，其中最常见的类型是 http，而 https 则是进行加密的网络传输。</span><br><span class="line">host：定义域主机（http 的默认主机是 www）</span><br><span class="line">domain：定义因特网域名，比如 w3school.com.cn</span><br><span class="line">port：定义主机上的端口号（http 的默认端口号是 80）</span><br><span class="line">path： 定义服务器上的路径（如果省略，则文档必须位于网站的根目录中）。</span><br><span class="line">filename： 定义文档/资源的名称</span><br><span class="line"></span><br><span class="line">2. 什么是DNS</span><br><span class="line">DNS(domain name system，域名系统)：因特网上域名和IP地址相互映射的分布式数据库；简单理解就是域名与IP地址的对照表，因为域名（如：www.google.com）对于我们而言，更便于记忆，但是机器却不擅长这种表达方式，因此需要将域名转换为IP地址，以便于机器识别， 这便有了DNS。</span><br><span class="line"></span><br><span class="line">3. 根域名服务器</span><br><span class="line">根服务器是架设互联网的必须设施，管理互联网的主目录，全球共有13套根域名服务器</span><br><span class="line"></span><br><span class="line">4. 递归查询</span><br><span class="line">客户端主机向本地域名服务器的查询是递归查询；所谓递归查询：客户端主机查询的域名地址无法在本地域名服务器中找到，因此本地域名服务器就以DNS客户端的身份向其他根域名服务器发起请求，进行查询，而不是让客户端主机去一直查询；</span><br><span class="line">递归查询的结果要么是返回的IP地址，要么是报错，表示无法查询到地址；</span><br><span class="line"></span><br><span class="line">5. 迭代查询</span><br><span class="line">本地域名服务器向根服务器、顶级域名服务器和主机域名服务器发起的查询请求就是迭代的过程，如：本地域名服务器向根服务器发起查询请求，根服务器中会告诉本地域名服务器：”我这里没有你要找的内容，你去顶级域名服务器上找吧“，并将顶级域名服务器的地址返回给本地域名服务器，本地域名服务器接收到后，继续向顶级域名服务器发送请求；顶级域名服务器要么返回ip地址，要么告诉本地域名服务器下一步要向哪个权限域名服务器发送请求，直到找到ip地址或找不到ip返回报错信息，然后信息返回给客户端主机；</span><br><span class="line">下图给出了这两种查询的差别</span><br><span class="line"></span><br><span class="line">递归过程：主机→本地DNS服务器→其他DNS服务器（如：我要找一个苹果吃，找到了A，问A有没有，A说我帮你去找B，B可能有，果真B有，然后B将苹果给了A，A再将苹果给我，这就是递归）</span><br><span class="line">迭代过程：本地DNS服务器→根服务器，本地DNS服务器→顶级域名服务器，本地DNS服务器→权限域名服务器；（如：我要找一个苹果，找到了A，A说我也没有，B可能有，你去找B吧；我又找B，B说我也没有，你去找C吧，我又去找C，终于找到了苹果，这就是迭代的过程）</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure><h4 id="2、TCP连接：TCP三次握手"><a href="#2、TCP连接：TCP三次握手" class="headerlink" title="2、TCP连接：TCP三次握手"></a>2、TCP连接：TCP三次握手</h4><p> 在客户端发送数据之前会发起 TCP 三次握手用以同步客户端和服务端的序列号和确认号，并交换 TCP 窗口大小信息。</p><img src="http://qiniu.iswho.site/1600832875%281%29.png" width="80%"><p> 说明：<br>    Ack：应答<br>    Fin：结束; 结束会话<br>    Seq： 一个数据段的第一个序列号<br>    SYN： 同步; 表示开始会话请求</p><p>第一次握手：客户端A将标志位SYN置为1,随机产生一个值为seq=X（X的取值范围为=1234567）的数据包到服务器，客户端A进入SYN_SENT状态，等待服务端B确认（第一次握手，由浏览器发起，告诉服务器我要发送请求了）；</p><p>第二次握手：服务端B收到数据包后由标志位SYN=1知道客户端A请求建立连接，服务端B将标志位SYN和ACK都置为1，ack=X+1，随机产生一个值seq=Y，并将该数据包发送给客户端A以确认连接请求，服务端B进入SYN_RCVD状态（第二次握手，由服务器发起，告诉浏览器我准备接受了，你赶紧发送吧）。</p><p>第三次握手：客户端A收到确认后，检查ack是否为X+1，ACK是否为1，如果正确则将标志位ACK置为1，ack=Y+1，并将该数据包发送给服务端B，服务端B检查ack是否为Y+1，ACK是否为1，如果正确则连接建立成功，客户端A和服务端B进入ESTABLISHED状态，完成三次握手，随后客户端A与服务端B之间可以开始传输数据了（第三次握手，由浏览器发送，告诉服务器，我马上就发了，准备接受吧）。</p><p><strong>为什需要三次握手？</strong> 计算机网络》第四版中讲“三次握手”的目的是“为了防止已失效的连接请求报文段突然又传送到了服务端，因而产生错误”。 书中的例子是这样的，“已失效的连接请求报文段”的产生在这样一种情况下：client发出的第一个连接请求报文段并没有丢失，而是在某个网络结点长时间的滞留了，以致延误到连接释放以后的某个时间才到达server。本来这是一个早已失效的报文段。但server收到此失效的连接请求报文段后，就误认为是client再次发出的一个新的连接请求。于是就向client发出确认报文段，同意建立连接。 假设不采用“三次握手”，那么只要server发出确认，新的连接就建立了。由于现在client并没有发出建立连接的请求，因此不会理睬server的确认，也不会向server发送数据。但server却以为新的运输连接已经建立，并一直等待client发来数据。这样，server的很多资源就白白浪费掉了。采用“三次握手”的办法可以防止上述现象发生。例如刚才那种情况，client不会向server的确认发出确认。server由于收不到确认，就知道client并没有要求建立连接。”。主要目的防止server端一直等待，浪费资源。</p><h4 id="3、浏览器向web服务器发送HTTP请求"><a href="#3、浏览器向web服务器发送HTTP请求" class="headerlink" title="3、浏览器向web服务器发送HTTP请求"></a>3、浏览器向web服务器发送HTTP请求</h4><p> TCP三次握手之后，开始发送HTTP请求报文至服务器（关于HTTP请求报文详解，可以看看这篇☞<a href="https://blog.csdn.net/qq_39735040/article/details/96749197" target="_blank" rel="noopener">传送门</a></p><p>   HTTP请求报文格式：请求行+请求头+空行+消息体，请求行包括请求方式（GET/POST/DELETE/PUT）、请求资源路径（URL）、HTTP版本号；</p><p><img src="http://qiniu.iswho.site/160083298.png" alt="img"></p><h4 id="4、服务器处理请求并返回HTTP报文"><a href="#4、服务器处理请求并返回HTTP报文" class="headerlink" title="4、服务器处理请求并返回HTTP报文"></a>4、服务器处理请求并返回HTTP报文</h4><p> 服务器收到请求后会发出应答，即响应数据。HTTP响应与HTTP请求相似， HTTP响应报文格式：状态行+响应头+空行+消息体，状态行包括HTTP版本号、状态码、状态说明。</p><p><img src="http://qiniu.iswho.site/1600833196.png" alt="img"></p><h4 id="5、浏览器解析渲染页面"><a href="#5、浏览器解析渲染页面" class="headerlink" title="5、浏览器解析渲染页面"></a>5、浏览器解析渲染页面</h4><p> 浏览器拿到响应文本后，解析HTML代码，请求js，css等资源，最后进行页面渲染，呈现给用户。页面渲染一般分为以下几个步骤：</p><p> （1）根据HTML文件解析出DOM Tree</p><p>（2）根据CSS解析出 CSSOM Tree(CSS规则树)</p><p>（3）将 DOM Tree 和 CSSOM Tree合并，构建Render tree(渲染树)</p><p>（4）reflow(重排)：根据Render tree进行节点信息计算（Layout）</p><p>（5）repaint(重绘)：根据计算好的信息绘制整个页面（Painting）</p><h4 id="6、TCP四次挥手。"><a href="#6、TCP四次挥手。" class="headerlink" title="6、TCP四次挥手。"></a>6、TCP四次挥手。</h4><p> 当数据传输完毕，需要断开TCP连接，此时发起tcp四次挥手</p><p><img src="http://qiniu.iswho.site/1600833272.png" alt="img"></p><p>1、客户端向服务端发送报文，Fin、Ack、Seq，表示已经没有数据传输了。并进入 FIN_WAIT_1 状态。(由浏览器告诉服务器，我请求报文发送完了，你准备关闭吧)</p><p>2、服务端向客户端发送报文，Ack、Seq，表示同意关闭请求。此时主机发起方进入 FIN_WAIT_2 状态。(由服务器告诉浏览器，我请求报文接受完了，我准备关闭了，你也准备吧)</p><p>3、服务端向客户端发送报文段，Fin、Ack、Seq，请求关闭连接。并进入 LAST_ACK 状态。(由服务器告诉浏览器，我响应报文发送完了，你准备关闭吧)</p><p>4、客户端向服务端发送报文段，Ack、Seq。然后进入等待 TIME_WAIT 状态。被动方收到发起方的报文段以后关闭连接。发起方等待一定时间未收到回复，则正常关闭。(由浏览器告诉服务器，我响应报文接受完了，我准备关闭了，你也准备吧)</p><p>简单说就是：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1、A——&gt;B ：A告诉B：“我发完了”；</span><br><span class="line">2、B——&gt;A：B告诉A：“好的，我知道你发完了”</span><br><span class="line">3、B——&gt;A：B告诉A：“我收完了”；</span><br><span class="line">4、A——&gt;B：A告诉B：“好的，我知道你发收完了”</span><br></pre></td></tr></table></figure><h3 id="后话"><a href="#后话" class="headerlink" title="后话"></a>后话</h3><p>以上基本就是在地址栏从输入 URL 到页面加载显示发生的全过程，<br>感觉有意思的一篇博客，转载自☞<a href="https://juejin.im/post/6859318186652336136" target="_blank" rel="noopener">掘金</a>，有兴趣的小伙伴可以自行深究。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;先来个流程总述：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;DNS解析：将域名解析成IP地址&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;TCP连接：TCP三次握手&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;发送HTTP请求&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;服务器处理请求并返回HTTP报文&lt;/p&gt;
+
+      
+    
+    </summary>
+    
+    
+      <category term="知识点" scheme="http://www.iswho.site/categories/%E7%9F%A5%E8%AF%86%E7%82%B9/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>springBoot整合中的一个bug</title>
+    <link href="http://www.iswho.site/7/"/>
+    <id>http://www.iswho.site/7/</id>
+    <published>2019-12-09T08:21:08.000Z</published>
+    <updated>2020-09-23T06:46:05.079Z</updated>
+    
+    <content type="html"><![CDATA[<p>一直想弄一个属于自己的springBoot的项目，然后开始整起来,创建springBoot成功,然后加swagger2和mybatis—plus,这个时候遇到了一个错误：</p><h3 id="java-lang-ClassNotFoundException-org-mybatis-logging-LoggerFactory"><a href="#java-lang-ClassNotFoundException-org-mybatis-logging-LoggerFactory" class="headerlink" title="java.lang.ClassNotFoundException: org.mybatis.logging.LoggerFactory"></a>java.lang.ClassNotFoundException: org.mybatis.logging.LoggerFactory</h3><img src="http://qiniu.iswho.site/1600827648%281%29.png" width="80%"><pre><code>百度解决错误,网上答案五花八门,不知道具体哪个是对的,只能一个个实验我实验了几个方法,错误得已解决，记录一下,也为后来的提供一个参考方向。这个错误在我这里发生的原因是因为pom.xml的文件中jar的冲突我要用mybaits-plus 但是我的pom文件中 有mybatis的jar包 也有mybaits-plus的jar包 这两个只能存其一，把mybatis的jar包删掉就行了</code></pre>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;一直想弄一个属于自己的springBoot的项目，然后开始整起来,创建springBoot成功,然后加swagger2和mybatis—plus,这个时候遇到了一个错误：&lt;/p&gt;
+&lt;h3 id=&quot;java-lang-ClassNotFoundException-org-my
+      
+    
+    </summary>
+    
+    
+      <category term="坑儿~" scheme="http://www.iswho.site/categories/%E5%9D%91%E5%84%BF/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>使用nginx方式实现http转换为https</title>
+    <link href="http://www.iswho.site/8/"/>
+    <id>http://www.iswho.site/8/</id>
+    <published>2019-11-29T08:27:46.587Z</published>
+    <updated>2020-09-23T06:47:36.540Z</updated>
+    
+    <content type="html"><![CDATA[<p>   使自己的域名从http转变为https,提高网站安全性，可以防止我们的网址被劫持。<br>同事说很简单的 然后我就百度着手开始弄，但是我的并没他说的那么简单，简直就是一步一个错误！</p><p>   首先 把ssl证书下载下来 我这里选择的Nginx的证书</p><img src="http://qiniu.iswho.site/nginx%E9%85%8D%E7%BD%AE1.png" width="80%"><p>   然后在服务器nginx文件夹下面 创建一个cert文件夹 把下载下来的文件上传到这个文件下面 可以用命令上传，也可以用XFtp上传</p><p>   执行命令：<b> vim nginx.conf</b> 进入修改Nginx的配置; 按i 进行编辑 ;拉到最下面 修改配置 (这是我修改好的):</p><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line"> listen 443; //https访问的端口</span><br><span class="line"> server_name www.iswho.site; //我的域名</span><br><span class="line"> ssl on;</span><br><span class="line"> root html/public; //nginx 静态访问的index页面</span><br><span class="line"> index index.html index.htm;</span><br><span class="line"> ssl_certificate   ../cert/iswho.pem; //你所上传的文件</span><br><span class="line"> ssl_certificate_key  ../cert/iswho.key; //你所上传的文件</span><br><span class="line"> ssl_session_timeout 5m;</span><br><span class="line"> ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;</span><br><span class="line"> ssl_protocols TLSv1 TLSv1.1 TLSv1.2;</span><br><span class="line"> ssl_prefer_server_ciphers on;</span><br><span class="line"> location / &#123;</span><br><span class="line">     root html/public;</span><br><span class="line">     index index.html index.htm;</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>修改完 按 <kbd>ESC</kbd> 退出编辑；<b> :wq</b>进行保存退出；<br>执行检查配置文件Nginx.conf是否正确 命令：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ /usr/<span class="built_in">local</span>/nginx/sbin/nginx -t</span><br></pre></td></tr></table></figure><p>然后我这里开始报错 </p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ unknown directive <span class="string">"ssl"</span> <span class="keyword">in</span> /usr/<span class="built_in">local</span>/nginx/conf/nginx.conf:100</span><br></pre></td></tr></table></figure><p>或者是</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ nginx:[emerg]unknown directive ssl</span><br></pre></td></tr></table></figure><p>这个错误说的并不是 刚才修改的配置文件 修改错了，而是说 你的Nginx 不支持SSL，<br>因为我们配置这个SSL证书需要引用到Nginx的中SSL这模块，然而我们一开始编译的Nginx的时候并没有把SSL模块一起编译进去，<br>所以导致这个错误的出现。</p><p>可以使用 </p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ /usr/<span class="built_in">local</span>/nginx/sbin/nginx -V</span><br></pre></td></tr></table></figure><p>命令检查 Nginx 是否支持 SSL,它会输出版本号跟是否支持ssl。<br>我的刚开始是这样的：configure arguments:<br>：后面是空的 表示不支持,需要进行配置 使其支持。</p><p>第一步：我们先来到当初下载Nginx的包压缩的解压目录<br><font color="red">命令1</font>： ./configure –with-http_ssl_module  //重新添加这个ssl模块</p><p>这个时候 我又报了个错误：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./configure: No such file or directory</span><br></pre></td></tr></table></figure><p>意思是说 我没有这个文件; 也有可能是:(./configure：错误：SSL模块需要OpenSSL库。)这个错误<br>原因是因为缺少了OpenSSL，这2个错误解决都可以执行：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ yum -y install openssl openssl-devel</span><br></pre></td></tr></table></figure><p>进行 openssl的安装；<br>再执行 ./configure 命令(这个好像不执行也可以，我好像是没执行，但是看百度别人的有执行)<br>然后 重新执行命令1<br><font color="red">命令2</font>：执行 make 命令，但是不要执行make install，因为make是用来编译的，而make install是安装，不然你整个Nginx会重新覆盖的。<br><font color="red">命令3</font>：在我们执行完做命令后，我们可以查看到在nginx解压目录下，objs文件夹中多了一个nginx的文件，这个就是新版本的程序了。<br>首先我们把之前的nginx先备份一下，然后把新的程序复制过去覆盖之前的即可。<br><font color="green">注：注意路径</font></p><p>  cp /usr/local/nginx/sbin/nginx /usr/local/nginx/sbin/nginx.bak   // 拷贝原始nginx 为一个nginx.bak的副本<br>    cp /opt/nginx-1.11.6/objs/nginx /usr/local/nginx/sbin/nginx      // 把新生成的文件覆盖原始文件<br>     cp:拷贝 ；/opt/nginx-1.11.6/objs/nginx 这个是上面 执行完make命令产生的 ；/usr/local/nginx/sbin/nginx 这个是你xxx的地方<br>    按y 确认覆盖</p><p>   我记得 这个时候 好像报了一个 Text file busy 的错误<br>   是因为我的Nginx 已开启 正在使用中的原因 先把Nginx关闭就行了<br>   这时再查看 目前的nginx是否支持ssl  /usr/local/nginx/sbin/nginx -V</p>   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">nginx version: nginx/1.11.6</span><br><span class="line">built by gcc 4.8.5 20150623 (Red Hat 4.8.5-36) (GCC)</span><br><span class="line">built with OpenSSL 1.0.2k-fips  26 Jan 2017</span><br><span class="line">TLS SNI support enabled</span><br><span class="line">configure arguments: --with-http_ssl_module</span><br></pre></td></tr></table></figure><p>configure arguments 这个后面有东西了 就代表支持SSL<br>    然后接着往下 再执行命令 检查nginx.conf的配置文件是否正确 报了一个：<br>    <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> nginx: [emerg] BIO_new_file(<span class="string">"/usr/local/nginx/conf/cert/iswho.pem"</span>) failed</span><br><span class="line">(SSL: error:02001002:system library:fopen:No such file or   directory:fopen(<span class="string">'/usr/local/nginx/conf/cert/iswho.pem'</span>,<span class="string">'r'</span>)</span><br><span class="line"> error:2006D080:BIO routines:BIO_new_file:no such file)</span><br><span class="line"> nginx: configuration file /usr/<span class="built_in">local</span>/nginx/conf/nginx.conf <span class="built_in">test</span> failed</span><br></pre></td></tr></table></figure></p><p>根据返回的错误可知是那个路径没对上 它找到的是conf下的cert文件夹，而我的cert文件夹再nginx文件夹下面<br>然后 我打开nginx.conf 重新配置了一下</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssl_certificate   ../cert/iswho.pem;</span><br><span class="line">ssl_certificate_key  ../cert/iswho.key;</span><br></pre></td></tr></table></figure><p>定位到了 正确的位置<br>保存 ，重新用命令检查 </p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nginx: the configuration file /usr/<span class="built_in">local</span>/nginx/conf/nginx.conf syntax is ok</span><br><span class="line">nginx: configuration file /usr/<span class="built_in">local</span>/nginx/conf/nginx.conf <span class="built_in">test</span> is successful</span><br></pre></td></tr></table></figure><p>这样是正确的</p><p>然后我重新加载一下配置 /usr/local/nginx/sbin/nginx -s reload<br>又来了一个错误：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ nginx: [error] invalid PID number <span class="string">""</span> <span class="keyword">in</span> <span class="string">"/usr/local/nginx/logs/nginx.pid"</span></span><br></pre></td></tr></table></figure><p>执行这个命令：/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf 就ok了<br>然后 vim nginx.conf<br>加一句话：<br>server {<br>listen 80; //端口号<br>server_name www.域名.com; //域名<br><font color="red">rewrite ^(.*) https://$server_name$1 permanent;</font> //重定向到https<br>}<br>用命令重新加载nginx 配置<br>用命令重启 nginx服务器<br>然后 再访问自己的域名 你会发现 域名地址前面有把锁,点击锁 提示链接是安全的，证书是有效的<br>或者 复制域名发给朋友  会发现域名前缀由本来的http改为了https</p><p> <font color="red">以下包含了 Nginx 常用的几个命令：</font></p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/usr/<span class="built_in">local</span>/nginx/sbin/nginx -t                <span class="comment">#检查配置文件nginx.conf的正确性命令</span></span><br><span class="line">/usr/<span class="built_in">local</span>/nginx/sbin/nginx -s reload        <span class="comment"># 重新载入配置文件</span></span><br><span class="line">/usr/<span class="built_in">local</span>/nginx/sbin/nginx -s reopen       <span class="comment"># 重启 Nginx</span></span><br><span class="line">/usr/<span class="built_in">local</span>/sbin/nginx -s stop              <span class="comment"># 停止 Nginx</span></span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;   使自己的域名从http转变为https,提高网站安全性，可以防止我们的网址被劫持。&lt;br&gt;同事说很简单的 然后我就百度着手开始弄，但是我的并没他说的那么简单，简直就是一步一个错误！&lt;/p&gt;
+&lt;p&gt;   首先 把ssl证书下载下来 我这里选择的Nginx的证书&lt;/p&gt;
+
+      
+    
+    </summary>
+    
+    
+      <category term="坑儿~" scheme="http://www.iswho.site/categories/%E5%9D%91%E5%84%BF/"/>
+    
+    
+      <category term="nginx" scheme="http://www.iswho.site/tags/nginx/"/>
+    
+      <category term="域名配置" scheme="http://www.iswho.site/tags/%E5%9F%9F%E5%90%8D%E9%85%8D%E7%BD%AE/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>博客简介</title>
+    <link href="http://www.iswho.site/1/"/>
+    <id>http://www.iswho.site/1/</id>
+    <published>2019-11-29T08:27:46.586Z</published>
+    <updated>2020-09-23T06:15:20.680Z</updated>
+    
+    <content type="html"><![CDATA[<p>欢迎来到我的博客! 这是一个简约轻量级的个人博客.用于分享一些经验和记录踩过的坑<br>如果你想做这样一个博客 可以跟我一样使用 <font size="5"><a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> </font> ,<br>在制作过程中有问题可以询问我 或者你可以访问 <font size="5"><a href="https://www.simon96.online/2018/10/12/hexo-tutorial/" target="_blank" rel="noopener">这个教程</a> </font>.</p><p><img src="http://qiniu.iswho.site/Jhonnyher-%E2%80%93Post-176.jpg" alt="avatar"></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;欢迎来到我的博客! 这是一个简约轻量级的个人博客.用于分享一些经验和记录踩过的坑&lt;br&gt;如果你想做这样一个博客 可以跟我一样使用 &lt;font size=&quot;5&quot;&gt;&lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;
+      
+    
+    </summary>
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>mysql数据库报错</title>
+    <link href="http://www.iswho.site/6/"/>
+    <id>http://www.iswho.site/6/</id>
+    <published>2019-11-29T08:27:46.586Z</published>
+    <updated>2019-11-29T08:27:46.586Z</updated>
+    
+    <content type="html"><![CDATA[<p>来到公司像往常一样打开项目启动，谁知道没启动起来,看错误日志 报了一个mysql连接不上去,包括navicat 也连接不上去 报错代码如下：</p><h2 id="报错代码"><a href="#报错代码" class="headerlink" title="报错代码"></a>报错代码</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ Lost connection to MySQL server at ‘reading initial communication packet<span class="string">', system error: 0</span></span><br></pre></td></tr></table></figure><p>意思是mysql远程连接丢失</p><h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>windows下的mysql错误解决办法： 找到mysql文件夹的所在位置， 与mysql–&gt;bin 目录同级的 my.ini 进行编辑<br> 打开以后   如果里面有 bind-address = 127.0.0.1  这句代码可以注释掉  前面加#号就可以注释掉了<br> 然后再 [mysqld] 的下面 添加 一行代码  </p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">skip-name-resolve</span><br></pre></td></tr></table></figure><p>保存 重启mysql服务就可以了</p><blockquote><p>linux 下的mysql 操作基本一样 不过linux下不是my.ini文件  而是my.cnf文件<br>可以用 命令修改 vim my.cnf ， 打开后 输入i 进行编辑， 里面的修改 跟windows下面的操作一样<br>编辑完 以后 用:wq 进行保存  然后再重启mysql </p></blockquote><h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>重启完毕 把navicat 关掉 重新打开 就可以进入数据库</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;来到公司像往常一样打开项目启动，谁知道没启动起来,看错误日志 报了一个mysql连接不上去,包括navicat 也连接不上去 报错代码如下：&lt;/p&gt;
+&lt;h2 id=&quot;报错代码&quot;&gt;&lt;a href=&quot;#报错代码&quot; class=&quot;headerlink&quot; title=&quot;报错代码&quot;&gt;
+      
+    
+    </summary>
+    
+    
+      <category term="坑儿~" scheme="http://www.iswho.site/categories/%E5%9D%91%E5%84%BF/"/>
+    
+    
+      <category term="mysql" scheme="http://www.iswho.site/tags/mysql/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Linux忘记mysql密码修改密码</title>
+    <link href="http://www.iswho.site/4/"/>
+    <id>http://www.iswho.site/4/</id>
+    <published>2019-11-29T08:27:46.585Z</published>
+    <updated>2019-11-29T08:27:46.585Z</updated>
+    
+    <content type="html"><![CDATA[<p>Linux上的mysql搭建成功以后，一段时间不用，想本地再访问mysql数据库，发现密码忘记了需要以下几步：<br>第一步：查询服务器上的mysql是否启动</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ps -ef | grep -i mysql</span><br></pre></td></tr></table></figure><p>启动的话，进行关闭</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ service mysql stop</span><br></pre></td></tr></table></figure><p>第二步：  安全启动mysql，且跳过授权表： </p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ mysqld_safe --user=mysql --skip-grant-tables --skip-networking &amp;   <span class="comment"># '&amp;' 这个是也要的  不是打错了</span></span><br></pre></td></tr></table></figure><p>上面的执行完成之后，进入 mysql  mysql -u root -p，直接回车进入就行，不需要输入密码</p><p>进入mysql以后  选择数据库 use mysql;  再执行进行修改密码：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ update mysql.user <span class="built_in">set</span> authentication_string=password(<span class="string">'123456'</span>) <span class="built_in">where</span> user=<span class="string">'root'</span>;</span><br></pre></td></tr></table></figure><p>or</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ update mysql.user <span class="built_in">set</span> password=password(<span class="string">'123456'</span>) <span class="built_in">where</span> user=<span class="string">'root'</span>;  <span class="comment">#我的是这个生效了</span></span><br></pre></td></tr></table></figure><p>然后让修改立即生效：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ flush privileges; <span class="comment"># 重载系统权限</span></span><br></pre></td></tr></table></figure><p>quit 退出MySQL;</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ service mysql restart  <span class="comment">#重启mysql服务</span></span><br></pre></td></tr></table></figure><hr><p><font color="red">如果报错：can’t connect to local MySQL server through socket ‘/var/lib/mysql/mysql.sock’ (2)</font></p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ rm -rf /var/lib/mysql <span class="comment">#删除原来安装过的mysql残留的数据</span></span><br><span class="line">$ systemctl restart mysqld <span class="comment">#重启mysqld服务</span></span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;Linux上的mysql搭建成功以后，一段时间不用，想本地再访问mysql数据库，发现密码忘记了需要以下几步：&lt;br&gt;第一步：查询服务器上的mysql是否启动&lt;/p&gt;
+&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;
+      
+    
+    </summary>
+    
+    
+      <category term="坑儿~" scheme="http://www.iswho.site/categories/%E5%9D%91%E5%84%BF/"/>
+    
+    
+      <category term="mysql" scheme="http://www.iswho.site/tags/mysql/"/>
+    
+      <category term="mysql配置" scheme="http://www.iswho.site/tags/mysql%E9%85%8D%E7%BD%AE/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>windows连接linux上的mysql数据库</title>
+    <link href="http://www.iswho.site/5/"/>
+    <id>http://www.iswho.site/5/</id>
+    <published>2019-11-29T08:27:46.585Z</published>
+    <updated>2019-11-29T08:27:46.585Z</updated>
+    
+    <content type="html"><![CDATA[<p>Linux上的mysql搭建成功以后，想本地windows访问mysql数据库 需要以下几步：</p><p>第一步：给服务器配置 3306的安全组:<br>    比如我的是阿里云服务器，登录阿里云控制台，找到云服务器，点进去找到 实例，里面会显示一个 你的服务器，点击更多，有个网络与安全组—&gt;安全组配置—&gt;配置规则<br>    —&gt;添加安全组—&gt;端口号是3306—&gt;授权对象是 0.0.0.0/0—&gt;描述可以自定义 我的是mysql,添加完 就OK了</p><p>第二步：登录服务器，给mysql配置远程登录权限:<br>    登录自己的服务器，然后再登录mysql 进入mysql命令：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ mysql -u root -p mysql  <span class="comment"># 第1个mysql是执行命令，第2个mysql是系统数据名称</span></span><br></pre></td></tr></table></figure><p>这时有密码输入密码，没有密码直接回车 。 忘记mysql密码的可以看另外一章文章，进行修改密码<br>进入mysql以后 在mysql执行：<br> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ grant all privileges on *.* to <span class="string">'root'</span>@<span class="string">'%'</span> identified by <span class="string">'123456'</span> with grant option; </span><br><span class="line"><span class="comment"># root是用户名，%代表任意主机，'123456'指定的登录密码（这个和本地的root密码可以设置不同的，互不影响）代表任何主机都可以访问</span></span><br></pre></td></tr></table></figure></p><p>然后让修改立即生效，执行以下命令：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ flush privileges; <span class="comment"># 重载系统权限</span></span><br></pre></td></tr></table></figure><p>如果想允许用户root从某个固定的ip主机连接到MySQL服务,比如：192.168.137.99这个ip,执行以下命令<br> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ grant all privileges on *.* to <span class="string">'root'</span>@<span class="string">'192.168.137.99'</span> identified by <span class="string">'123456'</span> with grant option;</span><br><span class="line">$ flush privileges; <span class="comment"># 重载系统权限</span></span><br></pre></td></tr></table></figure></p><p>第三步：把3306端口 加到防火墙中，使其可以对外访问</p><p>先执行 </p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 3306 -j ACCEPT</span><br></pre></td></tr></table></figure><p>再执行 </p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ firewall-cmd --zone=public --add-port=3306/tcp --permanent</span><br></pre></td></tr></table></figure><p>重启防火墙</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ systemctl restart firewalld.service</span><br></pre></td></tr></table></figure><p>查看规则是否生效</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ iptables -L -n</span><br></pre></td></tr></table></figure><p>现在去windows上用navicat访问Linux的上的mysql 就可以连接了</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;Linux上的mysql搭建成功以后，想本地windows访问mysql数据库 需要以下几步：&lt;/p&gt;
+&lt;p&gt;第一步：给服务器配置 3306的安全组:&lt;br&gt;    比如我的是阿里云服务器，登录阿里云控制台，找到云服务器，点进去找到 实例，里面会显示一个 你的服务器，点击更
+      
+    
+    </summary>
+    
+    
+      <category term="坑儿~" scheme="http://www.iswho.site/categories/%E5%9D%91%E5%84%BF/"/>
+    
+    
+      <category term="mysql" scheme="http://www.iswho.site/tags/mysql/"/>
+    
+      <category term="mysql配置" scheme="http://www.iswho.site/tags/mysql%E9%85%8D%E7%BD%AE/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>小工具</title>
+    <link href="http://www.iswho.site/3/"/>
+    <id>http://www.iswho.site/3/</id>
+    <published>2019-09-05T08:21:08.000Z</published>
+    <updated>2019-11-29T08:27:46.586Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="下载百度网盘资源-不限速-–-gt-点这里"><a href="#下载百度网盘资源-不限速-–-gt-点这里" class="headerlink" title="下载百度网盘资源 不限速 –&gt; 点这里"></a>下载百度网盘资源 不限速 –&gt; <a href="http://pandownload.com/index.html" target="_blank" rel="noopener">点这里</a></h3><h3 id="数据恢复小工具-–-gt-点这里"><a href="#数据恢复小工具-–-gt-点这里" class="headerlink" title="数据恢复小工具 –&gt; 点这里"></a>数据恢复小工具 –&gt; <a href="https://pan.baidu.com/s/1SqnXEIYgvfs_WVIYRx83lA" target="_blank" rel="noopener">点这里</a></h3><h3 id="WIFI密码查看器-–-gt-点这里"><a href="#WIFI密码查看器-–-gt-点这里" class="headerlink" title="WIFI密码查看器 –&gt; 点这里"></a>WIFI密码查看器 –&gt; <a href="https://pan.baidu.com/s/1nMoq_XTcRydprzhsav47Jw" target="_blank" rel="noopener">点这里</a></h3><h3 id="键盘记录器-–-gt-点这里"><a href="#键盘记录器-–-gt-点这里" class="headerlink" title="键盘记录器 –&gt; 点这里"></a>键盘记录器 –&gt; <a href="https://pan.baidu.com/s/1VSOwXv9XLz0AMrvM-EHX7A" target="_blank" rel="noopener">点这里</a></h3><h3 id="WIN10激活脚本-–-gt-点这里"><a href="#WIN10激活脚本-–-gt-点这里" class="headerlink" title="WIN10激活脚本 –&gt; 点这里"></a>WIN10激活脚本 –&gt; <a href="https://pan.baidu.com/s/1V_DsvOOMDB3yWYU1IHUEdQ" target="_blank" rel="noopener">点这里</a></h3><h3 id="拷贝U盘数据-–-gt-点这里"><a href="#拷贝U盘数据-–-gt-点这里" class="headerlink" title="拷贝U盘数据 –&gt; 点这里"></a>拷贝U盘数据 –&gt; <a href="https://pan.baidu.com/s/1YRLHwVS8hAPJ-CHDxf7tjw" target="_blank" rel="noopener">点这里</a></h3>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h3 id=&quot;下载百度网盘资源-不限速-–-gt-点这里&quot;&gt;&lt;a href=&quot;#下载百度网盘资源-不限速-–-gt-点这里&quot; class=&quot;headerlink&quot; title=&quot;下载百度网盘资源 不限速 –&amp;gt; 点这里&quot;&gt;&lt;/a&gt;下载百度网盘资源 不限速 –&amp;gt; &lt;a 
+      
+    
+    </summary>
+    
+    
+      <category term="工具" scheme="http://www.iswho.site/categories/%E5%B7%A5%E5%85%B7/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>资源网站</title>
+    <link href="http://www.iswho.site/2/"/>
+    <id>http://www.iswho.site/2/</id>
+    <published>2019-09-04T08:21:08.000Z</published>
+    <updated>2019-11-29T08:27:46.587Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>排名不分先后！</p></blockquote><h3 id="黑马-–-gt-点这里"><a href="#黑马-–-gt-点这里" class="headerlink" title="黑马 –&gt; 点这里"></a>黑马 –&gt; <a href="http://www.itheima.com/" target="_blank" rel="noopener">点这里</a></h3><h3 id="慕课网-–-gt-点这里"><a href="#慕课网-–-gt-点这里" class="headerlink" title="慕课网 –&gt; 点这里"></a>慕课网 –&gt; <a href="https://www.imooc.com/" target="_blank" rel="noopener">点这里</a></h3><h3 id="尚硅谷-–-gt-点这里"><a href="#尚硅谷-–-gt-点这里" class="headerlink" title="尚硅谷 –&gt; 点这里"></a>尚硅谷 –&gt; <a href="http://www.atguigu.com/" target="_blank" rel="noopener">点这里</a></h3><h3 id="菜鸟教程-–-gt-点这里"><a href="#菜鸟教程-–-gt-点这里" class="headerlink" title="菜鸟教程  –&gt; 点这里"></a>菜鸟教程  –&gt; <a href="https://www.runoob.com" target="_blank" rel="noopener">点这里</a></h3><h3 id="极客学院-–-gt-点这里"><a href="#极客学院-–-gt-点这里" class="headerlink" title="极客学院 –&gt; 点这里"></a>极客学院 –&gt; <a href="https://www.jikexueyuan.com/" target="_blank" rel="noopener">点这里</a></h3><h3 id="腾讯课堂-–-gt-点这里"><a href="#腾讯课堂-–-gt-点这里" class="headerlink" title="腾讯课堂 –&gt; 点这里"></a>腾讯课堂 –&gt; <a href="https://ke.qq.com/" target="_blank" rel="noopener">点这里</a></h3><h3 id="51CTO-–-gt-点这里"><a href="#51CTO-–-gt-点这里" class="headerlink" title="51CTO –&gt; 点这里"></a>51CTO –&gt; <a href="https://edu.51cto.com/" target="_blank" rel="noopener">点这里</a></h3><h3 id="HOW2J-cn-–-gt-点这里"><a href="#HOW2J-cn-–-gt-点这里" class="headerlink" title="HOW2J.cn  –&gt; 点这里"></a>HOW2J.cn  –&gt; <a href="http://how2j.cn/p/3079" target="_blank" rel="noopener">点这里</a></h3><h3 id="W3CSCHOOL-–-gt-点这里"><a href="#W3CSCHOOL-–-gt-点这里" class="headerlink" title="W3CSCHOOL –&gt; 点这里"></a>W3CSCHOOL –&gt; <a href="https://www.w3cschool.cn/" target="_blank" rel="noopener">点这里</a></h3><h3 id="mybatis-–-gt-点这里"><a href="#mybatis-–-gt-点这里" class="headerlink" title="mybatis –&gt; 点这里"></a>mybatis –&gt; <a href="http://www.mybatis.org/mybatis-3/zh/" target="_blank" rel="noopener">点这里</a></h3><h3 id="mybatis-plus-–-gt-点这里"><a href="#mybatis-plus-–-gt-点这里" class="headerlink" title="mybatis-plus –&gt; 点这里"></a>mybatis-plus –&gt; <a href="https://mp.baomidou.com/" target="_blank" rel="noopener">点这里</a></h3><h3 id="Element-ui-–-gt-点这里"><a href="#Element-ui-–-gt-点这里" class="headerlink" title="Element-ui –&gt; 点这里"></a>Element-ui –&gt; <a href="https://element.eleme.cn/#/zh-CN" target="_blank" rel="noopener">点这里</a></h3><h3 id="Linux-–-gt-点这里"><a href="#Linux-–-gt-点这里" class="headerlink" title="Linux –&gt; 点这里"></a>Linux –&gt; <a href="https://pan.baidu.com/s/1is9O0thN1itqiwDEV83EwA" target="_blank" rel="noopener">点这里</a></h3><h3 id="数据分析Python-–-gt-资源1-；-资源2"><a href="#数据分析Python-–-gt-资源1-；-资源2" class="headerlink" title="数据分析Python –&gt; 资源1 ； 资源2"></a>数据分析Python –&gt; <a href="https://pan.baidu.com/s/1W2vVOUYemhgee-P0l79bCw" target="_blank" rel="noopener">资源1</a> ； <a href="https://pan.baidu.com/s/155E4eKyri-KJ3qgOKtDxvQ" target="_blank" rel="noopener">资源2</a></h3><h3 id="前端-–-gt-资源1"><a href="#前端-–-gt-资源1" class="headerlink" title="前端 –&gt; 资源1"></a>前端 –&gt; <a href="https://pan.baidu.com/s/1aBCqfX7PlwSxv0_rc8Xq5Q" target="_blank" rel="noopener">资源1</a></h3><h3 id="java-–-gt-资源1-里面涵盖各种于java相关的资源"><a href="#java-–-gt-资源1-里面涵盖各种于java相关的资源" class="headerlink" title="java –&gt; 资源1 里面涵盖各种于java相关的资源"></a>java –&gt; <a href="https://pan.baidu.com/s/1YwTnqRTPv2yrU7dUnZBTmg" target="_blank" rel="noopener">资源1</a> 里面涵盖各种于java相关的资源</h3><h3 id="数据库-–-gt-资源1-orcle、Mongodb"><a href="#数据库-–-gt-资源1-orcle、Mongodb" class="headerlink" title="数据库 –&gt; 资源1 orcle、Mongodb"></a>数据库 –&gt; <a href="https://pan.baidu.com/s/1q8GIXSmDwM12N_5Oh6VNDA" target="_blank" rel="noopener">资源1</a> orcle、Mongodb</h3><h3 id="软件破解-–-gt-点这里"><a href="#软件破解-–-gt-点这里" class="headerlink" title="软件破解 –&gt; 点这里"></a>软件破解 –&gt; <a href="https://pan.baidu.com/s/1d6oC1c7nBEXvUiLV8hlwlQ" target="_blank" rel="noopener">点这里</a></h3><h3 id="C–-gt-点这里"><a href="#C–-gt-点这里" class="headerlink" title="C–&gt; 点这里"></a>C–&gt; <a href="https://pan.baidu.com/s/1nLEBagC3vcpNSgnEvC3L-w" target="_blank" rel="noopener">点这里</a></h3><h3 id="测试–-gt-点这里"><a href="#测试–-gt-点这里" class="headerlink" title="测试–&gt; 点这里"></a>测试–&gt; <a href="https://pan.baidu.com/s/1WND8SWLbIjPnOaKibm9Ftg" target="_blank" rel="noopener">点这里</a></h3><h3 id="安卓–-gt-点这里"><a href="#安卓–-gt-点这里" class="headerlink" title="安卓–&gt; 点这里"></a>安卓–&gt; <a href="https://pan.baidu.com/s/1byKRnjBQvXeJmUTsdR4Zsw" target="_blank" rel="noopener">点这里</a></h3><h3 id="GO语言-–-gt-点这里"><a href="#GO语言-–-gt-点这里" class="headerlink" title="GO语言 –&gt;点这里"></a>GO语言 –&gt;<a href="https://pan.baidu.com/s/10q40WFlbZOWm3Z3S9CJPaw" target="_blank" rel="noopener">点这里</a></h3><h3 id="大数据-–-gt-点这里"><a href="#大数据-–-gt-点这里" class="headerlink" title="大数据 –&gt;点这里"></a>大数据 –&gt;<a href="https://pan.baidu.com/s/1vxtGms9uerO3mODk_GhYSg" target="_blank" rel="noopener">点这里</a></h3><h3 id="微信小程序-–-gt-点这里"><a href="#微信小程序-–-gt-点这里" class="headerlink" title="微信小程序 –&gt;点这里"></a>微信小程序 –&gt;<a href="https://pan.baidu.com/s/1vgMz02aaaWcVdpPAYBCJeQ" target="_blank" rel="noopener">点这里</a></h3><h3 id="第三方sdk-–-gt-点这里"><a href="#第三方sdk-–-gt-点这里" class="headerlink" title="第三方sdk –&gt;点这里"></a>第三方sdk –&gt;<a href="https://sdk.cn/" target="_blank" rel="noopener">点这里</a></h3><h3 id="力扣-–-gt-点这里一个刷题的网站"><a href="#力扣-–-gt-点这里一个刷题的网站" class="headerlink" title="力扣 –&gt;点这里一个刷题的网站"></a>力扣 –&gt;<a href="https://leetcode-cn.com/problemset/all/" target="_blank" rel="noopener">点这里</a>一个刷题的网站</h3><h3 id="牛客网-–-gt-点这里一个刷题的网站"><a href="#牛客网-–-gt-点这里一个刷题的网站" class="headerlink" title="牛客网 –&gt;点这里一个刷题的网站"></a>牛客网 –&gt;<a href="https://www.nowcoder.com/" target="_blank" rel="noopener">点这里</a>一个刷题的网站</h3><h3 id="面试用-–-gt-点这里"><a href="#面试用-–-gt-点这里" class="headerlink" title="面试用 –&gt;点这里"></a>面试用 –&gt;<a href="https://pan.baidu.com/s/1vUaoUJp0PsOq9AV4dJmgUw" target="_blank" rel="noopener">点这里</a></h3><h3 id="V2EX-–-gt-点这里这是一个技术网站"><a href="#V2EX-–-gt-点这里这是一个技术网站" class="headerlink" title="V2EX –&gt; 点这里这是一个技术网站"></a>V2EX –&gt; <a href="https://www.v2ex.com/" target="_blank" rel="noopener">点这里</a>这是一个技术网站</h3><h3 id="CSDN-–-gt-点这里这是一个技术网站"><a href="#CSDN-–-gt-点这里这是一个技术网站" class="headerlink" title="CSDN –&gt; 点这里这是一个技术网站"></a>CSDN –&gt; <a href="https://www.csdn.net/" target="_blank" rel="noopener">点这里</a>这是一个技术网站</h3><h3 id="码农教程-–-gt-点这里这是一个技术网站"><a href="#码农教程-–-gt-点这里这是一个技术网站" class="headerlink" title="码农教程 –&gt; 点这里这是一个技术网站"></a>码农教程 –&gt; <a href="http://www.manongjc.com/" target="_blank" rel="noopener">点这里</a>这是一个技术网站</h3><h3 id="IT电子书籍下载网站-–-gt-点这里这是一个技术网站"><a href="#IT电子书籍下载网站-–-gt-点这里这是一个技术网站" class="headerlink" title="IT电子书籍下载网站 –&gt; 点这里这是一个技术网站"></a>IT电子书籍下载网站 –&gt; <a href="https://itbook.download/" target="_blank" rel="noopener">点这里</a>这是一个技术网站</h3><h3 id="HEXO-–-gt-点这里快速搭建个人博客网站"><a href="#HEXO-–-gt-点这里快速搭建个人博客网站" class="headerlink" title="HEXO –&gt; 点这里快速搭建个人博客网站"></a>HEXO –&gt; <a href="https://hexo.io/zh-cn/" target="_blank" rel="noopener">点这里</a>快速搭建个人博客网站</h3><h3 id="TYPECHO-–-gt-点这里快速搭建个人博客网站"><a href="#TYPECHO-–-gt-点这里快速搭建个人博客网站" class="headerlink" title="TYPECHO –&gt; 点这里快速搭建个人博客网站"></a>TYPECHO –&gt; <a href="http://typecho.org/" target="_blank" rel="noopener">点这里</a>快速搭建个人博客网站</h3><h3 id="ESAYICON-–-gt-点这里这是一个图标库"><a href="#ESAYICON-–-gt-点这里这是一个图标库" class="headerlink" title="ESAYICON –&gt; 点这里这是一个图标库"></a>ESAYICON –&gt; <a href="https://www.easyicon.net/" target="_blank" rel="noopener">点这里</a>这是一个图标库</h3><h3 id="阿里图标库-–-gt-点这里这是一个图标库"><a href="#阿里图标库-–-gt-点这里这是一个图标库" class="headerlink" title="阿里图标库 –&gt; 点这里这是一个图标库"></a>阿里图标库 –&gt; <a href="https://www.iconfont.cn/" target="_blank" rel="noopener">点这里</a>这是一个图标库</h3><h3 id="FONTAWESOME图标库-–-gt-点这里这是一个图标库"><a href="#FONTAWESOME图标库-–-gt-点这里这是一个图标库" class="headerlink" title="FONTAWESOME图标库 –&gt; 点这里这是一个图标库"></a>FONTAWESOME图标库 –&gt; <a href="https://fontawesome.com/" target="_blank" rel="noopener">点这里</a>这是一个图标库</h3><h3 id="一个有意思的前端网页-–-gt-点这里"><a href="#一个有意思的前端网页-–-gt-点这里" class="headerlink" title="一个有意思的前端网页 –&gt; 点这里"></a>一个有意思的前端网页 –&gt; <a href="https://www.strml.net/" target="_blank" rel="noopener">点这里</a></h3><h3 id="炫酷的前端网页-–-gt-点这里"><a href="#炫酷的前端网页-–-gt-点这里" class="headerlink" title="炫酷的前端网页 –&gt; 点这里"></a>炫酷的前端网页 –&gt; <a href="https://greensock.com/showcase/" target="_blank" rel="noopener">点这里</a></h3><h3 id="免版税图库-–-gt-点这里"><a href="#免版税图库-–-gt-点这里" class="headerlink" title="免版税图库 –&gt; 点这里"></a>免版税图库 –&gt; <a href="https://www.piqsels.com/zh" target="_blank" rel="noopener">点这里</a></h3><h3 id="IP138网站-–-gt-点这里"><a href="#IP138网站-–-gt-点这里" class="headerlink" title="IP138网站 –&gt; 点这里"></a>IP138网站 –&gt; <a href="http://www.ip138.com/" target="_blank" rel="noopener">点这里</a></h3><h3 id="站长工具-–-gt-点这里"><a href="#站长工具-–-gt-点这里" class="headerlink" title="站长工具 –&gt; 点这里"></a>站长工具 –&gt; <a href="http://tool.chinaz.com/" target="_blank" rel="noopener">点这里</a></h3><h3 id="52破解网站-–-gt-点这里"><a href="#52破解网站-–-gt-点这里" class="headerlink" title="52破解网站 –&gt; 点这里"></a>52破解网站 –&gt; <a href="https://www.52pojie.cn/" target="_blank" rel="noopener">点这里</a></h3><h3 id="美剧天堂–-gt-点这里看美剧"><a href="#美剧天堂–-gt-点这里看美剧" class="headerlink" title="美剧天堂–&gt; 点这里看美剧"></a>美剧天堂–&gt; <a href="https://www.meijutt.com/" target="_blank" rel="noopener">点这里</a>看美剧</h3><h3 id="人人美剧–-gt-点这里看美剧"><a href="#人人美剧–-gt-点这里看美剧" class="headerlink" title="人人美剧–&gt; 点这里看美剧"></a>人人美剧–&gt; <a href="https://www.meiju.net/" target="_blank" rel="noopener">点这里</a>看美剧</h3><h3 id="单反教程–-gt-点这里"><a href="#单反教程–-gt-点这里" class="headerlink" title="单反教程–&gt; 点这里"></a>单反教程–&gt; <a href="https://pan.baidu.com/s/14zr4R-nl3_we8A8_e-kmGQ" target="_blank" rel="noopener">点这里</a></h3><h3 id="维修电脑视频–-gt-点这里"><a href="#维修电脑视频–-gt-点这里" class="headerlink" title="维修电脑视频–&gt; 点这里"></a>维修电脑视频–&gt; <a href="https://pan.baidu.com/s/1T4YW9L4YPe59bvdW67UQjg" target="_blank" rel="noopener">点这里</a></h3>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;blockquote&gt;
+&lt;p&gt;排名不分先后！&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&quot;黑马-–-gt-点这里&quot;&gt;&lt;a href=&quot;#黑马-–-gt-点这里&quot; class=&quot;headerlink&quot; title=&quot;黑马 –&amp;gt; 点这里&quot;&gt;&lt;/a&gt;黑马 –&amp;gt; &lt;
+      
+    
+    </summary>
+    
+    
+      <category term="资源网址" scheme="http://www.iswho.site/categories/%E8%B5%84%E6%BA%90%E7%BD%91%E5%9D%80/"/>
+    
+    
+      <category term="study" scheme="http://www.iswho.site/tags/study/"/>
+    
+  </entry>
+  
+</feed>

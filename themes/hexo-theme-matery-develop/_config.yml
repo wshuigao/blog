@@ -16,12 +16,12 @@ menu:
   About:
     url: /about
     icon: fas fa-user-circle
-  Contact:
-    url: /contact
-    icon: fas fa-comments
-  Friends:
-    url: /friends
-    icon: fas fa-address-book
+  #Contact:
+    #url: /contact
+    #icon: fas fa-comments
+  #Friends:
+    #url: /friends
+    #icon: fas fa-address-book
   # 二级菜单写法如下
   #Medias:
   #  icon: fas fa-list
@@ -64,7 +64,7 @@ cover:
 # index page dream text,
 # 配置首页显示"梦想"的语句.
 dream:
-  enable: true
+  enable: false
   showTitle: true
   title: 我的梦想
   text: 不是每个人都应该像我这样去建造一座水晶大教堂，但是每个人都应该拥有自己的梦想，设计自己的梦想，追求自己的梦想，实现自己的梦想。梦想是生命的灵魂，是心灵的灯塔，是引导人走向成功的信仰。有了崇高的梦想，只要矢志不渝地追求，梦想就会成为现实，奋斗就会变成壮举，生命就会创造奇迹。——罗伯·舒乐
@@ -123,7 +123,7 @@ logo: /medias/logo.png
 # including the display name of the button, the font awesome icon, and the hyperlink to the button.
 # 首页 banner 中的第二个按钮的配置，包括按钮的显示名称、font awesome图标和按钮的超链接.
 indexbtn:
-  enable: true
+  enable: false
   name: Github
   icon: fab fa-github-alt
   url: https://github.com/blinkfox/hexo-theme-matery
@@ -132,11 +132,11 @@ indexbtn:
 # icon/button will not show up if you leave the corresponding socialLink empty
 # 首页 banner 中的第二行个人信息配置，留空即不启用
 socialLink:
-  github:  https://github.com/blinkfox
-  email: 1181062873@qq.com
+  github:  https://github.com/wshuigao
+  email: 2450146923@qq.com
   facebook: # https://www.facebook.com/xxx
   twitter: # https://twitter.com/xxx
-  qq: 1181062873
+  qq: 2450146923
   weibo: # https://weibo.com/xxx
   zhihu: # https://www.zhihu.com/xxx
   rss: true # true、false

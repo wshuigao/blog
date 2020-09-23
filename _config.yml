@@ -72,7 +72,9 @@ pagination_dir: page
 
 # 主题
 
-theme: hexo-theme-next-master
+#theme: hexo-theme-next-master
+theme: hexo-theme-fluid-master
+#theme: hexo-theme-matery-develop
 
 
 
@@ -121,8 +123,8 @@ jsonContent:
     categories: false
     tags: true
 
-#busuanzi_count:
-#  enable: true
+busuanzi_count:
+  enable: true
 
 symbols_count_time:
   symbols: true

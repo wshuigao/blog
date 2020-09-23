@@ -3,12 +3,13 @@ title: springBoot整合中的一个bug
 date: 2019-12-09 16:21:08
 comments: "true"
 reward: "true"
-categories: "坑~"
+categories: "坑儿~"
 ---
 一直想弄一个属于自己的springBoot的项目，然后开始整起来,创建springBoot成功,然后加swagger2和mybatis—plus,这个时候遇到了一个错误：
 
 ### java.lang.ClassNotFoundException: org.mybatis.logging.LoggerFactory
-<a><img src="http://q1pyga56k.bkt.clouddn.com/springBoot_mybatis-plus1.png" class="animated zoomIn"> </a>
+
+<a><img src="http://qiniu.iswho.site/1600827648%281%29.png" class="animated zoomIn"> </a>
 
 
 
